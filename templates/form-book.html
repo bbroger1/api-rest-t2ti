@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="container">
+    <form action="/books" method="POST">
+        <div class="mb-3">
+            <label for="isbn" class="form-label">ISBN</label>
+            <input type="text" name="isbn" class="form-control" id="isbn">
+        </div>
+        <div class="mb-3">
+            <label for="bookName" class="form-label">Nome</label>
+            <input type="text" name="name" class="form-control" id="bookName">
+        </div>
+        <div class="mb-3">
+            <label for="bookPages" class="form-label">Quantidade de Páginas</label>
+            <input type="number" name="cant_pages" class="form-control" id="bookPages" min="0">
+        </div>
+        <div class="mb-3">
+            <label for="author_id" class="form-label">Autor</label>
+            <select name="author_id" class="form-select" id="author_id">
+                <option value="">Selecione</option>
+                {% for autor in autores %}
+                <option value="{{ autor.id }}">{{ autor.name }}</option>
+                {% endfor %}
+            </select>
+
+        </div>
+        <div class="text-end">
+            <a href="/books/list" class="btn btn-secondary">Voltar</a>
+            <button type="submit" class="btn btn-primary">Salvar</button>
+        </div>
+    </form>
+</div>
+{% endblock %}

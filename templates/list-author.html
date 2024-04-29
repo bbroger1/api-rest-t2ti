@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="mt-2 mb-2 text-end">
+    <a href="/authors/form" type="button" class="btn btn-primary">Incluir Autor</a>
+</div>
+<table class="table table-hover table-responsive">
+    <thead>
+        <tr>
+            <th>#ID</th>
+            <th class="text-center">Nome</th>
+            <th class="text-center">Idade</th>
+            <th class="text-center">Ações</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% if autores|length > 0 %}
+        {% for autor in autores %}
+        <tr>
+            <th scope="row">{{ autor.id }}</th>
+            <td class="text-center">{{ autor.name }}</td>
+            <td class="text-center">{{ autor.age }}</td>
+            <td class="text-center">
+                <button type="button" class="btn btn-sm btn-primary">Editar</button>
+                <button type="button" class="btn btn-sm btn-danger">Excluir</button>
+            </td>
+        </tr>
+        {% endfor %}
+        {% else %}
+        <tr>
+            <td colspan="4" class="text-center">Nenhum autor encontrado.</td>
+        </tr>
+        {% endif %}
+    </tbody>
+</table>
+{% endblock %}
