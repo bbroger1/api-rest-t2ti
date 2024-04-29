@@ -21,8 +21,11 @@ def index():
 def listAuthors():
     response = get_authors()
     autores = []
-    if response is not None:
-        autores = response.json["authors"]
+    if isinstance(response, Response):
+        if response.json:
+            autores = response.json["authors"]
+        else:
+            autores = []
     return render_template("list-author.html", autores=autores)
 
 
@@ -95,8 +98,11 @@ def add_author():
             ):
                 response = get_authors()
                 autores = []
-                if response is not None:
-                    autores = response.json["authors"]
+                if isinstance(response, Response):
+                    if response.json:
+                        autores = response.json["authors"]
+                    else:
+                        autores = []
                 return render_template("list-author.html", autores=autores)
 
         return (
@@ -120,11 +126,14 @@ def add_author():
 def listBooks():
     response = get_books()
     if isinstance(response, Response):
-        books = response.json["books"]
+        if response.json:
+            books = response.json["books"]
+        else:
+            books = []
     else:
         print("Response: ", response)
         books = []
-    
+
     return render_template("list-book.html", livros=books)
 
 
@@ -157,8 +166,11 @@ def get_books():
 def addFormBook():
     response = get_authors()
     autores = []
-    if response is not None:
-        autores = response.json["authors"]
+    if isinstance(response, Response):
+        if response.json:
+            autores = response.json["authors"]
+        else:
+            autores = []
     return render_template("form-book.html", autores=autores)
 
 
@@ -205,7 +217,10 @@ def add_book():
             ):
                 response = get_books()
                 if isinstance(response, Response):
-                    books = response.json["books"]
+                    if response.json:
+                        books = response.json["books"]
+                    else:
+                        books = []
                 else:
                     print("Response: ", response)
                     books = []
