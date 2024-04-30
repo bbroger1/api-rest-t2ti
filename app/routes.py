@@ -1,68 +1,43 @@
-from flask import Flask, Response, request, jsonify, render_template
+from flask import render_template, jsonify, request, Response, Blueprint
+from app.database import db
 
-from models import db, Author, Book
+from .models.author import Author
+from .models.book import Book
+from .controllers.book_controller import *
+from .controllers.author_controller import *
 
-app = Flask(__name__)
-# app.config["SQLALCHEMY_DATABASE_URI"] = ("sqlite:////tmp/test.db")
-app.config["SQLALCHEMY_DATABASE_URI"] = (
-    "postgresql+psycopg2://postgres:root@localhost:5432/teste"
-)
-
-db.init_app(app)
+main = Blueprint("main", __name__)
 
 
-@app.route("/")
+@main.route("/")
 def index():
     title = "RCS Soft - Livraria"
     return render_template("index.html", title=title)
 
 
-@app.route("/authors/list")
-def listAuthors():
-    response = get_authors()
-    autores = []
-    if isinstance(response, Response):
-        if response.json:
-            autores = response.json["authors"]
-        else:
-            autores = []
-    return render_template("list-author.html", autores=autores)
-
-
-@app.route("/authors", methods=["GET"])
-def get_authors():
+@main.route("/authors/list")
+def list_authors():
     try:
-        authors = Author.query.all()
-        authors_data = []
-        for author in authors:
-            author_data = {
-                "id": author.id,
-                "name": author.name,
-                "age": author.age,
-                "books": [],
-            }
-            for book in author.books:
-                book_data = {
-                    "id": book.id,
-                    "isbn": book.isbn,
-                    "name": book.name,
-                    "cant_pages": book.cant_pages,
-                    "createdAt": book.created_at,
-                }
-                author_data["books"].append(book_data)
-            authors_data.append(author_data)
-        return jsonify({"authors": authors_data})
+        autores = get_authors()
+        if is_request_json():
+            return response_json("success", "Lista de autores", autores)
+
+        return render_template("list-author.html", autores=autores)
     except Exception as error:
-        print("Error", error)
-        return jsonify({"message": "Internal server error"}), 500
+        print("Error: ", error)
+        message = "Lista de autores não pode ser recuperada"
+        if is_request_json():
+            return response_json("error", message, data=None)
+
+        return render_template("erro.html", message=message)
 
 
-@app.route("/authors/form", methods=["GET", "POST"])
+@main.route("/authors/form", methods=["GET", "POST"])
 def addFormAuthor():
     return render_template("form-author.html")
 
 
-@app.route("/authors", methods=["POST"])
+@main.route("/authors", methods=["POST"])
 def add_author():
     try:
         content_type = request.headers.get("Content-Type")
@@ -70,7 +45,7 @@ def add_author():
         if content_type:
             if (
                 "multipart/form-data" in content_type
-                or "application/x-www-form-urlencoded" in content_type
+                or "mainlication/x-www-form-urlencoded" in content_type
             ):
                 # A solicitação veio de um formulário HTML
                 name = request.form.get("name")
@@ -122,7 +97,7 @@ def add_author():
         return jsonify({"message": "Internal server error"}), 500
 
 
-@app.route("/books/list")
+@main.route("/books/list")
 def listBooks():
     response = get_books()
     if isinstance(response, Response):
@@ -137,7 +112,7 @@ def listBooks():
     return render_template("list-book.html", livros=books)
 
 
-@app.route("/books", methods=["GET"])
+@main.route("/books", methods=["GET"])
 def get_books():
     try:
         books = Book.query.all()
@@ -162,7 +137,7 @@ def get_books():
         return jsonify({"message": "Internal server error"}), 500
 
 
-@app.route("/books/form", methods=["GET", "POST"])
+@main.route("/books/form", methods=["GET", "POST"])
 def addFormBook():
     response = get_authors()
     autores = []
@@ -174,7 +149,7 @@ def addFormBook():
     return render_template("form-book.html", autores=autores)
 
 
-@app.route("/books", methods=["POST"])
+@main.route("/books", methods=["POST"])
 def add_book():
     try:
         content_type = request.headers.get("Content-Type")
@@ -245,5 +220,9 @@ def add_book():
         return jsonify({"message": "Internal server error"}), 500
 
 
-if __name__ == "__main__":
-    app.run(host="0.0.0.0", debug=True, port=5000)
+def is_request_json():
+    return request.headers.get("Content-Type") == "application/json"
+
+
+def response_json(status, message, data):
+    return jsonify({"status": status, "message": message, "data": data})
